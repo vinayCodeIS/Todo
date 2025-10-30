@@ -1,0 +1,22 @@
+.App {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* Add some spacing for the container */
+.container {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* Make the todo items stand out */
+.MuiListItem-root {
+  background-color: white;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+/* Add hover effect to todo items */
+.MuiListItem-root:hover {
+  background-color: #f8f8f8;
+}

@@ -155,7 +155,13 @@ const installingDataBaseAndServer = async () => {
   } catch (e) {
     console.error('Database initialization error:', e)
     console.log(`DB error:${e.message}`)
-    process.exit(1)
+    // Do not exit the process on DB init failure in production; start the
+    // server so the platform (Render) sees a running process and we can
+    // report DB health via endpoints. This avoids immediate 502 responses.
+    const PORT = process.env.PORT || 4000
+    app.listen(PORT, () => {
+      console.log(`Server started on port ${PORT} (DB init failed, running with limited functionality)`)
+    })
   }
 }
 

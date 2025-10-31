@@ -1,0 +1,20 @@
+# Render manifest to deploy backend from the 'backend' folder
+services:
+  - type: web
+    name: todo-backend
+    env: node
+    plan: free
+    branch: main
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+# Notes:
+# - This manifest tells Render to run build/start inside the 'backend' folder
+#   so it finds the backend's package.json. If your service was previously
+#   created pointing to another folder, Render will use this manifest on next
+#   deploy to set the correct rootDir.

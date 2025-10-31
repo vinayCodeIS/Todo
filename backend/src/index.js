@@ -12,6 +12,11 @@ const dbPath = path.join(__dirname, '..', 'todoApplication.db')
 app.use(cors())
 app.use(express.json())
 
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({ status: 'healthy', message: 'Todo API is running' })
+})
+
 // Use the main date-fns export so functions work correctly under CommonJS
 const { format, isMatch } = require('date-fns')
 

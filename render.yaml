@@ -7,9 +7,9 @@ services:
     branch: main
     # rootDirectory should point to the folder that contains package.json
     rootDirectory: backend
-    # Use explicit commands so Render runs in the correct folder and finds package.json
-    buildCommand: cd backend && npm ci
-    startCommand: cd backend && npm start
+  # Use commands that run inside the `rootDirectory` (backend)
+  buildCommand: npm ci
+  startCommand: npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

@@ -1,6 +1,0 @@
-node_modules/
-.env
-npm-debug.log
-.DS_Store
-# Ignore local sqlite DB by default; remove this line if you intentionally want to push the DB
-todoApplication.db

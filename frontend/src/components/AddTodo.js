@@ -31,11 +31,17 @@ function AddTodo() {
       // Get the next available ID (in a real app, this would be handled by the backend)
   const response = await axios.get('http://localhost:4000/todos/');
       const nextId = Math.max(...response.data.map(t => t.id), 0) + 1;
+      // Normalize payload to backend expected fields (snake_case)
+      const payload = {
+        id: nextId,
+        todo: todo.todo,
+        priority: todo.priority,
+        status: todo.status,
+        category: todo.category,
+        due_date: todo.dueDate
+      };
 
-  await axios.post('http://localhost:4000/todos/', {
-        ...todo,
-        id: nextId
-      });
+      await axios.post('http://localhost:4000/todos/', payload);
       navigate('/');
     } catch (error) {
       setError(error.response?.data || 'Error adding todo');

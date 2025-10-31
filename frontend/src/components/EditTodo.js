@@ -37,7 +37,7 @@ function EditTodo() {
   const response = await axios.get(`http://localhost:4000/todos/${id}`);
       setTodo({
         ...response.data,
-        dueDate: response.data.due_date.split('T')[0]
+        dueDate: response.data.due_date ? response.data.due_date.split('T')[0] : (response.data.dueDate || '')
       });
       setLoading(false);
     } catch (error) {
@@ -49,7 +49,13 @@ function EditTodo() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-  await axios.put(`http://localhost:4000/todos/${id}`, todo);
+      // Send payload using backend expected field names (snake_case)
+      const payload = {
+        ...todo,
+        due_date: todo.dueDate
+      };
+
+      await axios.put(`http://localhost:4000/todos/${id}`, payload);
       navigate('/');
     } catch (error) {
       setError(error.response?.data || 'Error updating todo');

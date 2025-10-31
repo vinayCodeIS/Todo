@@ -41,7 +41,12 @@ function TodoList() {
         url += '?' + params.toString();
       }
       const response = await axios.get(url);
-      setTodos(response.data);
+      // Normalize backend response: convert snake_case due_date to dueDate for UI
+      const data = response.data.map(t => ({
+        ...t,
+        dueDate: t.due_date ? t.due_date.split('T')[0] : (t.dueDate || '')
+      }));
+      setTodos(data);
     } catch (error) {
       console.error('Error fetching todos:', error);
     }

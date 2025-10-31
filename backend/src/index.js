@@ -16,24 +16,14 @@ app.use((req, res, next) => {
   next()
 })
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  const errorResponse = {
-    timestamp: new Date().toISOString(),
-    path: req.path,
-    method: req.method,
-    error: {
-      message: err.message,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-    }
-  }
-  
-  console.error('[Error]', errorResponse)
-  res.status(err.status || 500).json(errorResponse)
-})
 // Use the project's backend root DB file (one level up) so the DB created
 // by scripts in backend/ is used instead of a different file under src/.
-const dbPath = path.join(__dirname, '..', 'todoApplication.db')
+// Use an absolute path for production or relative path for development
+const dbPath = process.env.NODE_ENV === 'production' 
+  ? path.join(process.env.RENDER_INTERNAL_DIR || '/tmp', 'todoApplication.db')
+  : path.join(__dirname, '..', 'todoApplication.db')
+
+console.log('Database path:', dbPath)
 
 // Enable CORS for frontend requests with proper configuration
 app.use(cors({
@@ -133,15 +123,37 @@ app.get('/api/test', async (req, res) => {
 
 const installingDataBaseAndServer = async () => {
   try {
+    console.log('Initializing database...')
+    // Ensure the directory exists
+    const dbDir = path.dirname(dbPath)
+    if (!require('fs').existsSync(dbDir)) {
+      require('fs').mkdirSync(dbDir, { recursive: true })
+    }
+    
     db = await open({
       filename: dbPath,
       driver: dbSqlite.Database,
     })
+    
+    // Initialize tables if they don't exist
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS todo (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        todo TEXT,
+        category TEXT,
+        priority TEXT,
+        status TEXT,
+        due_date TEXT
+      )
+    `)
+    
     const PORT = process.env.PORT || 4000
     app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}/`)
+      console.log(`Server is running on port ${PORT}`)
+      console.log(`Database initialized at: ${dbPath}`)
     })
   } catch (e) {
+    console.error('Database initialization error:', e)
     console.log(`DB error:${e.message}`)
     process.exit(1)
   }

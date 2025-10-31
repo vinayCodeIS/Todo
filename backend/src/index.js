@@ -5,6 +5,32 @@ const cors = require('cors')
 const app = express()
 const path = require('path')
 require('dotenv').config()
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now()
+  res.on('finish', () => {
+    const duration = Date.now() - start
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} ${res.statusCode} - ${duration}ms`)
+  })
+  next()
+})
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  const errorResponse = {
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    method: req.method,
+    error: {
+      message: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    }
+  }
+  
+  console.error('[Error]', errorResponse)
+  res.status(err.status || 500).json(errorResponse)
+})
 // Use the project's backend root DB file (one level up) so the DB created
 // by scripts in backend/ is used instead of a different file under src/.
 const dbPath = path.join(__dirname, '..', 'todoApplication.db')
@@ -25,20 +51,62 @@ app.get('/', async (req, res) => {
       res.json({ 
         status: 'healthy',
         message: 'Todo API is running',
-        dbStatus: 'connected'
+        dbStatus: 'connected',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
       })
     } else {
       res.status(503).json({ 
         status: 'unhealthy',
         message: 'Database not connected',
-        dbStatus: 'disconnected'
+        dbStatus: 'disconnected',
+        timestamp: new Date().toISOString()
       })
     }
   } catch (error) {
     res.status(500).json({ 
       status: 'error',
       message: 'Internal server error',
-      error: error.message
+      error: error.message,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+// Detailed system metrics endpoint
+app.get('/metrics', async (req, res) => {
+  try {
+    const metrics = {
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      cpu: process.cpuUsage(),
+      node_version: process.version,
+      pid: process.pid,
+      environment: process.env.NODE_ENV || 'development'
+    }
+    
+    // Add database metrics
+    if (db) {
+      try {
+        const dbMetrics = await db.get('PRAGMA database_size')
+        metrics.database = {
+          status: 'connected',
+          size: dbMetrics
+        }
+      } catch (dbError) {
+        metrics.database = {
+          status: 'error',
+          error: dbError.message
+        }
+      }
+    }
+    
+    res.json(metrics)
+  } catch (error) {
+    res.status(500).json({ 
+      error: 'Failed to gather metrics',
+      details: error.message 
     })
   }
 })

@@ -1,0 +1,24 @@
+# Render service manifest - Web Service for this Node backend
+services:
+  - type: web
+    name: backend
+    env: node
+    plan: free
+    branch: main
+    # Install dependencies before starting
+    buildCommand: npm install
+    # Use the start script from package.json
+    startCommand: npm start
+    # Health-check path so Render can detect a healthy deployment
+    healthCheckPath: /health
+    # How often Render polls the health endpoint (seconds)
+    healthCheckIntervalSeconds: 15
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+# Notes:
+# - This project uses SQLite (todoApplication.db) which is stored on the instance's filesystem.
+#   Render's filesystem is ephemeral across deploys and instances. If you need persistent
+#   storage consider using a managed database (e.g., Render Postgres) or attach a Persistent Disk
+#   (paid plan). See RENDER_DEPLOY.md for more details.

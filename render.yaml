@@ -13,6 +13,17 @@ services:
       - key: NODE_ENV
         value: production
 
+  - type: static
+    name: todo-frontend
+    env: static
+    plan: free
+    branch: main
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishPath: build
+    # Don't set the API URL here; set REACT_APP_API_URL in the Render dashboard
+    # for the frontend service once the backend public URL is available.
+
 # Notes:
 # - This manifest tells Render to run build/start inside the 'backend' folder
 #   so it finds the backend's package.json. If your service was previously

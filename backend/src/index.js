@@ -18,6 +18,32 @@ app.use(cors({
 app.use(express.json())
 
 // Health check endpoint
+app.get('/', async (req, res) => {
+  try {
+    // Check if database is connected
+    if (db) {
+      res.json({ 
+        status: 'healthy',
+        message: 'Todo API is running',
+        dbStatus: 'connected'
+      })
+    } else {
+      res.status(503).json({ 
+        status: 'unhealthy',
+        message: 'Database not connected',
+        dbStatus: 'disconnected'
+      })
+    }
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'error',
+      message: 'Internal server error',
+      error: error.message
+    })
+  }
+})
+
+// Health check endpoint
 app.get('/', (req, res) => {
   res.json({ status: 'healthy', message: 'Todo API is running' })
 })
@@ -26,6 +52,16 @@ app.get('/', (req, res) => {
 const { format, isMatch } = require('date-fns')
 
 let db = null
+
+// Test endpoint to verify database operations
+app.get('/api/test', async (req, res) => {
+  try {
+    const result = await db.get('SELECT 1 as test')
+    res.json({ success: true, result })
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
 
 const installingDataBaseAndServer = async () => {
   try {

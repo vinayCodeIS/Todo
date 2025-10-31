@@ -4,12 +4,17 @@ const dbSqlite = require('sqlite3')
 const cors = require('cors')
 const app = express()
 const path = require('path')
+require('dotenv').config()
 // Use the project's backend root DB file (one level up) so the DB created
 // by scripts in backend/ is used instead of a different file under src/.
 const dbPath = path.join(__dirname, '..', 'todoApplication.db')
 
-// Enable CORS for frontend requests
-app.use(cors())
+// Enable CORS for frontend requests with proper configuration
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}))
 app.use(express.json())
 
 // Health check endpoint

@@ -8,6 +8,11 @@ services:
     envVars:
       - key: PORT
         value: 4000
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://todo-frontend.vercel.app # Update this with your actual frontend URL
     healthCheckPath: /
     plan: free
     branch: main
+    autoDeploy: true

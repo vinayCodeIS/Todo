@@ -2,30 +2,33 @@
 services:
   - type: web
     name: todo-backend
-    env: node
+    runtime: node
     plan: free
     branch: main
-    rootDir: backend
-    buildCommand: npm install
-    startCommand: npm start
+    # rootDirectory should point to the folder that contains package.json
+    rootDirectory: backend
+    # Use explicit commands so Render runs in the correct folder and finds package.json
+    buildCommand: cd backend && npm ci
+    startCommand: cd backend && npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 4000
 
   - type: static
     name: todo-frontend
-    env: static
+    runtime: static
     plan: free
     branch: main
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    publishPath: build
-    # Don't set the API URL here; set REACT_APP_API_URL in the Render dashboard
-    # for the frontend service once the backend public URL is available.
+    rootDirectory: frontend
+    buildCommand: cd frontend && npm ci && npm run build
+    publishPath: frontend/build
+    # Do not set API URL here; set REACT_APP_API_URL in Vercel or the frontend service env
 
 # Notes:
-# - This manifest tells Render to run build/start inside the 'backend' folder
-#   so it finds the backend's package.json. If your service was previously
-#   created pointing to another folder, Render will use this manifest on next
-#   deploy to set the correct rootDir.
+# - This manifest explicitly directs Render to the `backend` folder so it can
+#   find `backend/package.json`. If you still see ENOENT for package.json,
+#   confirm that `backend/package.json` exists and that the service is using
+#   this manifest (Render reads the root-level render.yaml on deploy).
